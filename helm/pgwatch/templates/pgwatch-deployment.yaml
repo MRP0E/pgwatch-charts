@@ -39,7 +39,7 @@ spec:
             value: pgwatch_metrics
           - name: METRIC_DATABASE_SSLMODE
             value: disable
-        {{- else }}
+        {{- else if .Values.pgwatch.postgres.use_existing_database }}
           - name: PGWATCH_USER
             value: {{ .Values.pgwatch.postgres.use_existing_database.username }}
           - name: PGWATCH_USER_PASSWORD
@@ -65,9 +65,14 @@ spec:
         {{ end }}
           image: {{ .Values.pgwatch.image }}
           volumeMounts:
-          - name: launcher
+          - name: configuration
             mountPath: /tmp/launcher.sh
             subPath: launcher.sh
+        {{if .Values.pgwatch.postgres.sources}}
+          - name: configuration
+            mountPath: /etc/sources.yaml
+            subPath: sources.yaml
+        {{ end }}
           name: pgwatch
           ports:
             - containerPort: 8080
@@ -78,9 +83,10 @@ spec:
         {{ end }}
           command: ["/tmp/launcher.sh"]
       volumes:
-      - name: launcher
+      - name: configuration
         configMap:
           name: pgwatch-cm
           defaultMode: 0777  # Damit es direkt ausführbar ist
       restartPolicy: Always
+
 

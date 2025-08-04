@@ -10,7 +10,7 @@ spec:
     - name: pgwatch
       port: 8080
       targetPort: 8080
-{{- if eq .Values.pgwatch.prometheus.new_prometheus.create_prometheus "true" }}
+{{- if or ( eq .Values.pgwatch.prometheus.enable_prom_sink "true" ) (.Values.pgwatch.prometheus.new_prometheus.create_prometheus "true")  }}
     - name: pgwatch-prometheus-sink
       port: 9188
       targetPort: 9188    
@@ -19,6 +19,7 @@ spec:
     application: pgwatch
     pgwatch.pods.role: pgwatch
 ---
+{{ if eq .Values.pgwatch.grafana.enable_grafana "true" }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -34,6 +35,7 @@ spec:
   selector:
     application: pgwatch
     pgwatch.pods.role: grafana
+{{ end }}
 ---
 {{- if eq .Values.pgwatch.postgres.create_metric_database "true" }}
 apiVersion: v1
